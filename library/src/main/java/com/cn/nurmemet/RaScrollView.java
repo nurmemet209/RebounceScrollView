@@ -1,4 +1,4 @@
-package com.example.nurmemet.customscrollview;
+package com.cn.nurmemet;
 
 import android.content.Context;
 import android.support.v4.view.MotionEventCompat;
@@ -8,7 +8,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
-import android.widget.Toast;
 
 /**
  * Created by nurmemet on 2016/11/15.
