@@ -23,6 +23,15 @@ public class RaScrollView extends ScrollView {
     private static final float DRAG_RATE = .6f;
     private ScrollerCompat mScroller;
     private static final int VALIDE_DELTA = 120;
+    private OnScrollEndListener mOnScrollEndListener;
+    private int mDirection=0;
+    public void setOnScrollEndListener(OnScrollEndListener onScrollEndListener){
+        this.mOnScrollEndListener=onScrollEndListener;
+    }
+
+    public interface OnScrollEndListener{
+        void onScrollEnd(int direction);
+    }
 
     public RaScrollView(Context context) {
         super(context);
@@ -53,20 +62,23 @@ public class RaScrollView extends ScrollView {
     public boolean onTouchEvent(MotionEvent ev) {
 
         int action = MotionEventCompat.getActionMasked(ev);
+
         if (getMeasuredHeight() <= getHeight()) {
             if (canScrollVertically(-1) && canScrollVertically(1)) {
                 return super.onTouchEvent(ev);
             }
         }
+        System.out.println("test");
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 mActivePointerId = ev.getPointerId(0);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (mActivePointerId == -1) {
-                    return false;
-                }
-                final float y = ev.getY(mActivePointerId);
+
+//                if (mActivePointerId == -1) {
+//                    return super.onTouchEvent(ev);
+//                }
+                final float y = ev.getY();
                 if (!mDragging) {
                     mInitionalY = y;
                     mDragging = true;
@@ -81,6 +93,7 @@ public class RaScrollView extends ScrollView {
                     mDragging=false;
                     return super.onTouchEvent(ev);
                 }
+                mDirection=overscroll>0?1:-1;
                 ViewCompat.offsetTopAndBottom(mContainer, (int) overscroll);
                 mInitionalY = y;
                 break;
@@ -89,6 +102,7 @@ public class RaScrollView extends ScrollView {
                 mActivePointerId = -1;
                 mDragging = false;
                 final float top = mContainer.getTop();
+                mScroller.abortAnimation();
                 mScroller.startScroll(0, (int) top, 0, (int) -top);
                 postOnAnimation(new Runnable() {
                     @Override
@@ -99,8 +113,8 @@ public class RaScrollView extends ScrollView {
                             ViewCompat.offsetTopAndBottom(mContainer, (int) (y - top));
                             postOnAnimation(this);
                         } else {
-                            if (VALIDE_DELTA <= top) {
-                                onAnimEnd();
+                            if (VALIDE_DELTA <= Math.abs(top)) {
+                                onAnimEnd(mDirection);
                             }
                         }
                     }
@@ -120,8 +134,10 @@ public class RaScrollView extends ScrollView {
         return true;
     }
 
-    public void onAnimEnd() {
-        Toast.makeText(getContext(), "onAnimEnd", Toast.LENGTH_SHORT).show();
+    public void onAnimEnd(int direction) {
+        if (mOnScrollEndListener!=null){
+            mOnScrollEndListener.onScrollEnd(mDirection);
+        }
     }
 
 
